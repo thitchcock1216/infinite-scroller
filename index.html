@@ -12,57 +12,22 @@
       background: #f4f4f4;
     }
     h1 { margin-bottom: 10px; }
-    #record, #leaderboard { font-size: 20px; color: #333; margin-bottom: 20px; }
+    #record { font-size: 20px; color: #333; margin-bottom: 20px; }
     #numbers { font-size: 24px; line-height: 1.6; }
   </style>
 </head>
 <body>
   <h1>Infinite Scroller: How Far Can You Go?</h1>
   <div id="record">Highest number reached: <span id="best">0</span></div>
-  <div id="leaderboard"><h2>Leaderboard</h2></div>
   <div id="numbers"></div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
-
   <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBFRZj3Xp9h1zkdgQb_tioVu7hfT9Fg7QE",
-      authDomain: "infinite-ef2ad.firebaseapp.com",
-      databaseURL: "https://infinite-ef2ad-default-rtdb.firebaseio.com",
-      projectId: "infinite-ef2ad",
-      storageBucket: "infinite-ef2ad.appspot.com",
-      messagingSenderId: "826068967473",
-      appId: "1:826068967473:web:ac6b41cc268e37a586b510"
-    };
-
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
     const numbersDiv = document.getElementById('numbers');
     const bestSpan = document.getElementById('best');
-    const leaderboardDiv = document.getElementById('leaderboard');
-
-    let username = "";
-    while (!username) { username = prompt("Enter your username:"); }
 
     let count = 1;
     let best = localStorage.getItem('bestScore') ? parseInt(localStorage.getItem('bestScore')) : 0;
     bestSpan.textContent = best;
-
-    // Real-time leaderboard
-    db.ref('scores').on('value', snapshot => {
-      const scores = snapshot.val() || {};
-      const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
-      leaderboardDiv.innerHTML = "<h2>Leaderboard</h2>";
-      sorted.forEach(([user, score]) => {
-        const div = document.createElement('div');
-        div.textContent = `${user}: ${score}`;
-        leaderboardDiv.appendChild(div);
-      });
-    });
 
     function loadMoreNumbers() {
       for (let i = 0; i < 100; i++) {
@@ -76,24 +41,25 @@
           bestSpan.textContent = best;
         }
 
-        if (count % 50 === 0) {
-          db.ref('scores/' + username).set(count);
-        }
-
         count++;
       }
     }
 
-    // Initial load
-    loadMoreNumbers();
+    // Load enough numbers so the page is scrollable
+    while (document.body.offsetHeight < window.innerHeight + 200) {
+      loadMoreNumbers();
+    }
 
-    // Load more as user scrolls
+    // Infinite scroll
+    let loading = false;
     window.addEventListener('scroll', () => {
+      if (loading) return;
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+        loading = true;
         loadMoreNumbers();
+        loading = false;
       }
     });
   </script>
 </body>
 </html>
-
