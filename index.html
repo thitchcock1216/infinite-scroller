@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Infinite Scroller: How Far Can You Go?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #record {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    #numbers {
+      font-size: 24px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <h1>Infinite Scroller: How Far Can You Go?</h1>
+  <div id="record">Highest number reached: <span id="best">0</span></div>
+  <div id="numbers"></div>
+
+  <script>
+    const numbersDiv = document.getElementById('numbers');
+    const bestSpan = document.getElementById('best');
+    let count = 1;
+    let best = localStorage.getItem('bestScore') ? parseInt(localStorage.getItem('bestScore')) : 0;
+    bestSpan.textContent = best;
+
+    function loadMoreNumbers() {
+      for (let i = 0; i < 100; i++) {
+        const num = document.createElement('div');
+        num.textContent = count;
+        numbersDiv.appendChild(num);
+        if (count > best) {
+          best = count;
+          localStorage.setItem('bestScore', best);
+          bestSpan.textContent = best;
+        }
+        count++;
+      }
+    }
+
+    loadMoreNumbers();
+
+    window.addEventListener('scroll', () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+        loadMoreNumbers();
+      }
+    });
+  </script>
+</body>
+</html>
